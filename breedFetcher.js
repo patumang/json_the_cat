@@ -1,4 +1,5 @@
 const request = require('request');
+
 const isJson = (str) => {
   try {
     return JSON.parse(str);
@@ -7,37 +8,33 @@ const isJson = (str) => {
   }
 };
 
-const args = process.argv.slice(2);
-if (args.length !== 1) {
-  console.log("Invalid Input! Input 1 Breed Name!");
-  process.exit();
-}
+const fetchBreedDescription = (breedName, callback) => {
 
-request(`https://api.thecatapi.com/v1/breeds/search?name=${args[0]}`, (error, response, body) => {
+  request(`https://api.thecatapi.com/v1/breeds/search?name=${breedName}`, (error, response, body) => {
 
-  if (error) {
-    console.log('error:', error); // Print the error if one occurred
-    process.exit();
-  }
+    if (error) {
+      callback(error, null);
+      return;
+    }
 
-  if (response && response.statusCode > 400) {
-    console.log('API error : Failed to get data!'); // Print the error if one occurred
-    process.exit();
-  }
+    if (response && response.statusCode > 400) {
+      callback('API error : Failed to get data!', null);
+      return;
+    }
 
-  if (!isJson(body)) {
-    console.log('Response is not in JSON format!');
-    process.exit();
-  }
+    if (!isJson(body)) {
+      callback('Response is not in JSON format!', null);
+      return;
+    }
 
-  const data = JSON.parse(body);
+    const data = JSON.parse(body);
 
-  if (data.length === 0) {
-    console.log("No breed found!");
-    process.exit();
-  }
-  console.log(`${args[0]} Description:`);
-  console.log(data[0].description);
+    if (data.length === 0) {
+      callback('No breed found!', null);
+      return;
+    }
+    callback(null, data[0].description);
+  });
+};
 
-  //console.log(typeof data);
-});
+module.exports = { fetchBreedDescription };
