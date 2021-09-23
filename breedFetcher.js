@@ -17,8 +17,10 @@ const fetchBreedDescription = (breedName, callback) => {
       return;
     }
 
-    if (response && response.statusCode > 400) {
-      callback('API error : Failed to get data!', null);
+    // if non-200 status, assume server error
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
+      callback(Error(msg), null);
       return;
     }
 
